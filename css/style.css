@@ -1,0 +1,471 @@
+/* =========================================================
+   Sahayak — plain, high-contrast styling.
+   Design goals: large text, large tap targets, few colors,
+   no decorative motion, no unusual fonts. Built for people
+   who do not use websites often — elderly, rural, first-time
+   patients, low digital literacy.
+   ========================================================= */
+
+:root{
+  --bg:            #FFFFFF;
+  --bg-panel:      #F5F7F9;
+  --text:          #1A1A1A;
+  --text-muted:    #4B5560;
+  --border:        #C7CDD3;
+  --border-strong: #9AA4AC;
+
+  --primary:       #14498A;   /* calm, trustworthy blue */
+  --primary-dark:  #0D3667;
+  --primary-bg:    #E9F0F8;
+
+  --alert:         #A32620;   /* red flag / abnormal values */
+  --alert-bg:      #FBE7E5;
+  --warn:          #8A5A00;   /* amber values, kept dark enough to read */
+  --warn-bg:       #FBF1DC;
+  --success:       #1E6B3C;
+  --success-bg:    #E6F3EA;
+
+  --radius: 8px;
+}
+
+*{ box-sizing:border-box; }
+html,body{ margin:0; padding:0; }
+
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  font-size:18px;
+  line-height:1.5;
+}
+
+h1{
+  font-size:26px;
+  font-weight:700;
+  margin:0 0 14px;
+  color:var(--text);
+}
+
+p{ margin:0 0 16px; }
+
+button{ font-family:inherit; }
+
+:focus-visible{
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* ---------------- header ---------------- */
+.site-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:16px 20px;
+  border-bottom:2px solid var(--border);
+  background:var(--bg);
+}
+.site-title{ font-size:19px; font-weight:700; color:var(--primary-dark); }
+
+.btn-link{
+  background:none;
+  border:none;
+  color:var(--primary);
+  font-size:16px;
+  text-decoration:underline;
+  cursor:pointer;
+  padding:6px;
+}
+
+/* ---------------- step indicator ---------------- */
+.step-indicator{
+  max-width:640px;
+  margin:18px auto 0;
+  padding:0 20px;
+}
+.step-text{
+  font-size:16px;
+  font-weight:600;
+  color:var(--text-muted);
+  margin-bottom:8px;
+}
+.progress-track{
+  height:8px;
+  background:var(--border);
+  border-radius:4px;
+  overflow:hidden;
+}
+.progress-fill{
+  height:100%;
+  width:20%;
+  background:var(--primary);
+  transition: width .25s ease;
+}
+
+/* ---------------- patient page / panel ---------------- */
+.page{
+  max-width:640px;
+  margin:0 auto;
+  padding:20px;
+}
+.panel{
+  background:var(--bg);
+  border:2px solid var(--border);
+  border-radius:var(--radius);
+  padding:24px 22px;
+}
+.screen{ display:none; }
+.screen.active{ display:block; }
+
+/* ---------------- buttons ---------------- */
+.btn-primary, .btn-secondary, .option-btn{
+  display:block;
+  width:100%;
+  font-size:18px;
+  font-weight:700;
+  padding:16px 18px;
+  border-radius:var(--radius);
+  cursor:pointer;
+  text-align:center;
+  margin-bottom:12px;
+}
+.btn-primary{
+  background:var(--primary);
+  color:#fff;
+  border:2px solid var(--primary);
+}
+.btn-primary:hover{ background:var(--primary-dark); border-color:var(--primary-dark); }
+.btn-primary:disabled{ background:var(--border); border-color:var(--border); color:#fff; cursor:not-allowed; }
+
+.btn-secondary{
+  background:#fff;
+  color:var(--primary-dark);
+  border:2px solid var(--primary);
+}
+.btn-secondary:hover{ background:var(--primary-bg); }
+
+.btn-wide{ margin-top:6px; }
+
+/* ---------------- language grid ---------------- */
+.lang-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-bottom:20px;
+}
+.lang-chip{
+  border:2px solid var(--border);
+  background:#fff;
+  padding:14px 10px;
+  border-radius:var(--radius);
+  font-size:18px;
+  text-align:left;
+  cursor:pointer;
+}
+.lang-chip .native-sub{
+  display:block;
+  font-size:14px;
+  color:var(--text-muted);
+  margin-top:2px;
+}
+.lang-chip.selected{
+  border-color:var(--primary);
+  background:var(--primary-bg);
+}
+
+/* ---------------- identify screen ---------------- */
+.option-row{ display:flex; flex-direction:column; gap:10px; margin-bottom:20px; }
+.option-btn{
+  background:#fff;
+  border:2px solid var(--border);
+  color:var(--text);
+}
+.option-btn.selected{
+  border-color:var(--primary);
+  background:var(--primary-bg);
+  color:var(--primary-dark);
+}
+.field-label{
+  display:block;
+  font-size:16px;
+  font-weight:600;
+  color:var(--text-muted);
+  margin-bottom:6px;
+}
+.text-input{
+  width:100%;
+  font-size:18px;
+  padding:14px;
+  border:2px solid var(--border);
+  border-radius:var(--radius);
+  margin-bottom:20px;
+}
+.text-input:focus{ border-color:var(--primary); outline:none; }
+
+.consent-box{
+  background:var(--bg-panel);
+  border:2px solid var(--border);
+  border-radius:var(--radius);
+  padding:16px;
+  margin-bottom:20px;
+}
+.checkbox-row{
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  font-size:16px;
+  cursor:pointer;
+}
+.checkbox-row input{ width:20px; height:20px; flex-shrink:0; margin-top:2px; }
+
+/* ---------------- converse screen ---------------- */
+.chat-log{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  margin-bottom:16px;
+  max-height:400px;
+  overflow-y:auto;
+}
+.bubble{
+  padding:14px 16px;
+  border-radius:var(--radius);
+  font-size:18px;
+  max-width:92%;
+}
+.bubble.ai{
+  background:var(--bg-panel);
+  border:2px solid var(--border);
+  align-self:flex-start;
+}
+.bubble.user{
+  background:var(--primary-bg);
+  border:2px solid var(--primary);
+  color:var(--primary-dark);
+  align-self:flex-end;
+  font-weight:600;
+}
+.typing-dots{ font-size:16px; color:var(--text-muted); }
+
+.redflag-banner{
+  background:var(--alert-bg);
+  border:2px solid var(--alert);
+  color:var(--alert);
+  border-radius:var(--radius);
+  padding:14px 16px;
+  font-size:16px;
+  font-weight:600;
+  margin-bottom:12px;
+}
+
+.answer-list{ display:flex; flex-direction:column; gap:10px; }
+.answer-btn{
+  width:100%;
+  text-align:left;
+  font-size:18px;
+  padding:15px 16px;
+  border:2px solid var(--border);
+  background:#fff;
+  border-radius:var(--radius);
+  cursor:pointer;
+}
+.answer-btn:hover{ border-color:var(--primary); background:var(--primary-bg); }
+
+/* ---------------- scan screen ---------------- */
+.scan-button{
+  width:100%;
+  font-size:18px;
+  font-weight:700;
+  padding:20px;
+  border:2px dashed var(--border-strong);
+  border-radius:var(--radius);
+  background:var(--bg-panel);
+  color:var(--text);
+  cursor:pointer;
+  margin-bottom:16px;
+}
+.scan-button:hover{ border-color:var(--primary); color:var(--primary-dark); }
+
+.scanning-note{
+  font-size:16px;
+  color:var(--text-muted);
+  margin-bottom:14px;
+}
+
+.doc-card{
+  border:2px solid var(--border);
+  border-radius:var(--radius);
+  padding:16px;
+  margin-bottom:14px;
+}
+.doc-card-head{
+  display:flex;
+  justify-content:space-between;
+  font-weight:700;
+  margin-bottom:10px;
+  font-size:17px;
+}
+.doc-card-head .doc-date{ font-weight:400; color:var(--text-muted); font-size:15px; }
+.doc-field{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  padding:8px 0;
+  border-top:1px solid var(--border);
+  font-size:16px;
+}
+.doc-field:first-of-type{ border-top:none; }
+.doc-field .val{ text-align:right; }
+.val-alert{ color:var(--alert); font-weight:700; }
+.val-warn{ color:var(--warn); font-weight:700; }
+.doc-confidence{
+  display:inline-block;
+  margin-top:10px;
+  font-size:14px;
+  color:var(--success);
+  font-weight:600;
+}
+
+/* ---------------- summarize checklist ---------------- */
+.checklist{ list-style:none; margin:0 0 20px; padding:0; }
+.checklist li{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:12px 0;
+  border-bottom:1px solid var(--border);
+  font-size:17px;
+  opacity:0;
+}
+.checklist li.show{ opacity:1; }
+.checklist .tick{
+  width:24px; height:24px;
+  border-radius:50%;
+  border:2px solid var(--border);
+  flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  font-size:14px;
+  color:transparent;
+}
+.checklist li.show .tick{
+  background:var(--success);
+  border-color:var(--success);
+  color:#fff;
+}
+
+/* ---------------- doctor console ---------------- */
+.page-wide{
+  max-width:1000px;
+  margin:0 auto;
+  padding:20px;
+}
+.clinic-bar{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  gap:10px;
+  padding-bottom:14px;
+  border-bottom:2px solid var(--border);
+  margin-bottom:16px;
+}
+.clinic-room{ font-size:14px; color:var(--text-muted); margin-bottom:4px; }
+.clinic-heading{ font-size:24px; margin:0; }
+
+.redflag-chip{
+  display:inline-block;
+  background:var(--alert-bg);
+  color:var(--alert);
+  border:2px solid var(--alert);
+  border-radius:var(--radius);
+  padding:8px 14px;
+  font-size:15px;
+  font-weight:700;
+}
+
+.patient-strip{
+  background:var(--bg-panel);
+  border:2px solid var(--border);
+  border-radius:var(--radius);
+  padding:16px 18px;
+  margin-bottom:18px;
+}
+.patient-name{ font-size:19px; font-weight:700; margin-bottom:4px; }
+.patient-sub{ font-size:15px; color:var(--text-muted); font-weight:400; }
+.time-saved{ margin-top:8px; font-size:15px; color:var(--success); font-weight:600; }
+
+.console-body{
+  display:grid;
+  grid-template-columns: 1fr 300px;
+  gap:20px;
+}
+.summary-col{}
+.side-col{ display:flex; flex-direction:column; gap:14px; }
+
+.section-block{
+  border:2px solid var(--border);
+  border-radius:var(--radius);
+  padding:16px 18px;
+  margin-bottom:14px;
+}
+.section-head{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:8px;
+  flex-wrap:wrap;
+}
+.section-title{ font-size:17px; font-weight:700; }
+.section-source{ font-size:14px; color:var(--text-muted); font-style:italic; }
+.section-body{
+  font-size:17px;
+  padding:6px 0;
+  border-radius:6px;
+}
+.section-body[contenteditable="true"]{
+  background:var(--bg-panel);
+  border:2px solid var(--primary);
+  padding:8px 10px;
+  outline:none;
+}
+.section-actions{ display:flex; gap:10px; margin-top:10px; }
+.text-btn{
+  font-size:15px;
+  background:none;
+  border:2px solid var(--border);
+  padding:6px 12px;
+  border-radius:6px;
+  cursor:pointer;
+  color:var(--text-muted);
+}
+.text-btn:hover{ border-color:var(--primary); color:var(--primary-dark); }
+.text-btn.verified{ border-color:var(--success); color:var(--success); }
+
+.lab-alert{ color:var(--alert); font-weight:700; }
+.lab-warn{ color:var(--warn); font-weight:700; }
+
+.side-note{
+  background:var(--bg-panel);
+  border:2px solid var(--border);
+  border-radius:var(--radius);
+  padding:14px;
+  font-size:15px;
+  color:var(--text-muted);
+  line-height:1.55;
+}
+
+.done-block{
+  grid-column:1 / -1;
+  text-align:center;
+  padding:50px 20px;
+  border:2px solid var(--success);
+  background:var(--success-bg);
+  border-radius:var(--radius);
+}
+.done-block h2{ font-size:22px; margin:0 0 8px; color:var(--success); }
+.done-block p{ color:var(--text); max-width:420px; margin:0 auto; }
+
+/* ---------------- responsive ---------------- */
+@media (max-width:720px){
+  .console-body{ grid-template-columns:1fr; }
+}

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sahayak — Patient History Form</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-title">Sahayak — Patient History Form</div>
+  <button class="btn-link" onclick="restartDemo()">Start over</button>
+</header>
+
+<div class="step-indicator" id="stepIndicator">
+  <div class="step-text" id="stepText">Step 1 of 5 — Tell us who you are</div>
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+</div>
+
+<!-- ===================== PATIENT SCREENS ===================== -->
+<main class="page" id="patientPage">
+
+  <!-- Screen 0: Welcome + language -->
+  <section class="panel screen active" id="s-welcome">
+    <h1>Welcome</h1>
+    <p>Before you see the doctor, we will ask a few simple questions about your health. You can speak your answers, or tap them on the screen. Either way is fine.</p>
+    <p class="field-label">Please choose your language</p>
+    <div class="lang-grid" id="langGrid"></div>
+    <button class="btn-primary btn-wide" onclick="goTo('s-identify')">Start</button>
+  </section>
+
+  <!-- Screen 1: Identify -->
+  <section class="panel screen" id="s-identify">
+    <h1>Who is visiting today?</h1>
+    <div class="option-row">
+      <button class="option-btn selected" id="opt-abha" onclick="selectIdMode('abha')">I have an ABHA health ID</button>
+      <button class="option-btn" id="opt-new" onclick="selectIdMode('new')">This is my first visit</button>
+    </div>
+
+    <label class="field-label" id="idLabel" for="idInput">ABHA ID</label>
+    <input class="text-input" type="text" id="idInput" placeholder="14-2536-XXXX-XXXX" />
+
+    <div class="consent-box">
+      <label class="checkbox-row">
+        <input type="checkbox" id="consentBox" />
+        <span>I agree to share this information with the hospital and my ABHA health account.</span>
+      </label>
+      <button class="btn-link" onclick="playListen(this)">🔊 Listen to this in my language</button>
+    </div>
+
+    <button class="btn-primary btn-wide" id="identifyContinue" disabled onclick="startConverse()">Continue</button>
+  </section>
+
+  <!-- Screen 2: Converse -->
+  <section class="panel screen" id="s-converse">
+    <h1>Tell us what's wrong</h1>
+    <div class="chat-log" id="chatLog"></div>
+    <div id="chipZone"></div>
+  </section>
+
+  <!-- Screen 3: Scan -->
+  <section class="panel screen" id="s-scan">
+    <h1>Do you have any old prescriptions or reports?</h1>
+    <p>If you brought any papers with you, you can scan them here so the doctor can see them.</p>
+    <button class="scan-button" onclick="scanDoc()" id="scanZone">📷 &nbsp; Tap to scan a document</button>
+    <div id="scanningRow"></div>
+    <div id="docList"></div>
+    <button class="btn-primary btn-wide" id="scanContinue" style="display:none;" onclick="finishScan()">Continue</button>
+    <button class="btn-secondary btn-wide" id="scanSkip" onclick="finishScan()">I have no documents</button>
+  </section>
+
+  <!-- Screen 4: Summarize -->
+  <section class="panel screen" id="s-summarize">
+    <h1>Preparing your summary</h1>
+    <p>Please wait a moment while we get everything ready for the doctor.</p>
+    <ul class="checklist" id="checklist"></ul>
+    <button class="btn-primary btn-wide" id="handoverBtn" style="display:none;" onclick="goToDoctor()">Hand to the doctor</button>
+  </section>
+
+</main>
+
+<!-- ===================== DOCTOR CONSOLE ===================== -->
+<main class="page-wide" id="doctorPage" style="display:none;">
+
+  <div class="clinic-bar">
+    <div>
+      <div class="clinic-room">Consultation Room 4 · General &amp; AYUSH OPD</div>
+      <h1 class="clinic-heading">Patient summary</h1>
+    </div>
+    <div id="redflagChipZone"></div>
+  </div>
+
+  <div class="patient-strip">
+    <div class="patient-name">Ramesh Kumar <span class="patient-sub">— 54, Male, Token A-214</span></div>
+    <div class="patient-sub">First visit today · ABHA-linked</div>
+    <div class="time-saved">About 6 minutes saved compared to writing this by hand</div>
+  </div>
+
+  <div class="console-body">
+    <div class="summary-col" id="summaryCol"></div>
+    <div class="side-col">
+      <div class="side-note">
+        <strong>How to read this:</strong> each section says whether it came from the patient's own words, a scanned document, or was written by the AI. Please check anything marked "AI" carefully.
+      </div>
+      <div class="side-note">
+        Tap "Edit" on any section to correct it. Nothing is saved to the patient's file until you confirm below.
+      </div>
+      <button class="btn-secondary btn-wide" onclick="flagInaccurate()">Flag something as inaccurate</button>
+      <button class="btn-primary btn-wide" id="confirmBtn" onclick="confirmHistory()">Confirm and start consultation</button>
+    </div>
+  </div>
+
+</main>
+
+<script src="js/state.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/identify.js"></script>
+<script src="js/converse.js"></script>
+<script src="js/scan.js"></script>
+<script src="js/summary.js"></script>
+<script src="js/doctor.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
