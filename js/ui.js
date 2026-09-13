@@ -1,31 +1,42 @@
-/* =========================================================
-   ui.js
-   Small, shared navigation helpers used by every step.
-   Keeping this separate means the rest of the code just calls
-   goTo('s-scan') and doesn't need to know how screens are
-   shown/hidden or how the step indicator text is worked out.
-   ========================================================= */
+// ui.js - Screen Transitions & UI Navigation
 
-// Every patient-facing screen, in order, with the step label
-// shown above it. Used to build "Step X of 5 — ..." automatically.
-const stepOrder = [
-  { id: 's-welcome',    label: 'Tell us who you are' },
-  { id: 's-identify',   label: 'Tell us who you are' },
-  { id: 's-converse',   label: "Tell us what's wrong" },
-  { id: 's-scan',       label: 'Scan any old documents' },
-  { id: 's-summarize',  label: 'Preparing your summary' },
-];
+function goToStep(stepNumber) {
+  state.currentStep = stepNumber;
 
-function goTo(id){
-  document.querySelectorAll('#patientPage .screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
+  // Update step indicator
+  document.getElementById('step-indicator').innerText = `Step ${stepNumber} of 5`;
 
-  const idx = stepOrder.findIndex(s => s.id === id);
-  const stepNum = Math.max(idx, 0) + 1; // welcome and identify both count as step 1
-  document.getElementById('stepText').textContent = `Step ${stepNum} of 5 — ${stepOrder[idx].label}`;
-  document.getElementById('progressFill').style.width = (stepNum / 5 * 100) + '%';
+  // Hide all screens
+  const screens = document.querySelectorAll('.screen');
+  screens.forEach(s => s.classList.add('hidden'));
 
-  document.getElementById('patientPage').style.display = 'block';
-  document.getElementById('doctorPage').style.display = 'none';
-  document.getElementById('stepIndicator').style.display = 'block';
+  // Show active screen
+  switch (stepNumber) {
+    case 1:
+      document.getElementById('screen-identify').classList.remove('hidden');
+      break;
+    case 2:
+      document.getElementById('screen-converse').classList.remove('hidden');
+      initConverseScreen();
+      break;
+    case 3:
+      document.getElementById('screen-scan').classList.remove('hidden');
+      break;
+    case 4:
+      document.getElementById('screen-summary').classList.remove('hidden');
+      runSummaryAnimation();
+      break;
+    case 5:
+      document.getElementById('screen-doctor').classList.remove('hidden');
+      buildDoctorConsole();
+      break;
+  }
+}
+
+function showRedFlagBanner(title, message) {
+  state.isRedFlag = true;
+  const alertEl = document.getElementById('red-flag-alert');
+  document.getElementById('alert-title').innerText = title;
+  document.getElementById('alert-msg').innerText = message;
+  alertEl.classList.remove('hidden');
 }

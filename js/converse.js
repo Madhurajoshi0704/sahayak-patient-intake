@@ -1,92 +1,108 @@
-/* =========================================================
-   converse.js
-   Step 2 — "Converse". This is a small state machine that
-   walks the `convo` tree defined in state.js:
+// converse.js - Conversational AI Engine, Voice API & Red Flag Alerting
 
-   1. renderNode(id)  -> shows the assistant's question and
-                          the answer buttons for that node
-   2. answer(id, i)   -> records the chosen answer, checks
-                          whether it should trigger the red-flag
-                          alert, then moves to the next node
+let recognition;
 
-   In a real system, `renderNode`'s text would come from an LLM
-   asking a genuinely adaptive follow-up question (and the
-   patient's spoken answer would come from an ASR service)
-   rather than from a fixed script — but the shape of the
-   interaction (ask -> listen -> branch) is the same.
-   ========================================================= */
+function initConverseScreen() {
+  // Update badge for AYUSH
+  const badge = document.getElementById('ayush-badge');
+  badge.classList.toggle('hidden', state.opdType !== 'ayush');
 
-function startConverse(){
-  goTo('s-converse');
-  document.getElementById('chatLog').innerHTML = '';
-  document.getElementById('chipZone').innerHTML = '';
-  state.answers = {};
-  state.redFlag = false;
-  renderNode('start');
+  state.conversation.currentQuestionId = 'cc';
+  renderQuestion();
 }
 
-function addBubble(who, text){
-  const log = document.getElementById('chatLog');
-  const div = document.createElement('div');
-  div.className = 'bubble ' + who;
-  div.textContent = text;
-  log.appendChild(div);
-  log.scrollTop = log.scrollHeight;
-  return div;
-}
+function renderQuestion() {
+  const qSet = state.opdType === 'ayush' ? ayushQuestions : allopathyQuestions;
+  const currentQ = qSet[state.conversation.currentQuestionId];
 
-function renderNode(nodeId){
-  document.getElementById('chipZone').innerHTML = '';
-  const log = document.getElementById('chatLog');
-
-  const typing = document.createElement('div');
-  typing.className = 'bubble ai typing-dots';
-  typing.textContent = '…';
-  log.appendChild(typing);
-  log.scrollTop = log.scrollHeight;
-
-  setTimeout(() => {
-    typing.remove();
-
-    if(nodeId === 'END'){
-      addBubble('ai', "Thank you. That's everything we need for now. Let's check for any old documents next.");
-      document.getElementById('chipZone').innerHTML =
-        `<button class="btn-primary btn-wide" onclick="goTo('s-scan')">Continue</button>`;
-      return;
-    }
-
-    const node = convo[nodeId];
-    addBubble('ai', node.ai);
-
-    document.getElementById('chipZone').innerHTML =
-      `<div class="answer-list">` +
-      node.options.map((o, i) => `<button class="answer-btn" onclick="answer('${nodeId}', ${i})">${o.label}</button>`).join('') +
-      `</div>`;
-  }, 500);
-}
-
-function answer(nodeId, idx){
-  const opt = convo[nodeId].options[idx];
-  addBubble('user', opt.label);
-  state.answers[opt.key] = opt.label;
-
-  if(nodeId === 'start'){
-    state.path = (opt.label === 'Chest pain') ? 'chestpain' : opt.label.toLowerCase();
+  if (!currentQ) {
+    // Interview Complete -> Go to scan step
+    goToStep(3);
+    return;
   }
-  document.getElementById('chipZone').innerHTML = '';
 
-  if(opt.redFlag){
-    state.redFlag = true;
-    setTimeout(() => {
-      const log = document.getElementById('chatLog');
-      const banner = document.createElement('div');
-      banner.className = 'redflag-banner';
-      banner.textContent = '⚠ We have alerted the nurse right away because of your answers. Someone will come to check on you shortly.';
-      log.appendChild(banner);
-      log.scrollTop = log.scrollHeight;
-      setTimeout(() => renderNode(opt.next), 700);
-    }, 300);
+  document.getElementById('ai-question').innerText = currentQ.question;
+  
+  // Speak out question automatically for accessibility
+  const speech = new SpeechSynthesisUtterance(currentQ.question);
+  speech.lang = state.language === 'hi' ? 'hi-IN' : 'en-US';
+  window.speechSynthesis.speak(speech);
+
+  // Render Touch Options (Dual Mode Input)
+  const container = document.getElementById('touch-options');
+  container.innerHTML = '';
+  
+  currentQ.options.forEach(option => {
+    const btn = document.createElement('button');
+    btn.className = 'btn btn-choice';
+    btn.innerText = option;
+    btn.onclick = () => handleAnswer(option);
+    container.appendChild(btn);
+  });
+}
+
+function handleAnswer(answerText) {
+  const currentId = state.conversation.currentQuestionId;
+  state.conversation.answers[currentId] = answerText;
+  state.conversation.history.push({ questionId: currentId, answer: answerText });
+
+  // Emergency Red Flag Detection
+  if (answerText.includes("Chest Pain") || answerText.includes("Heavy / Squeezing Pressure")) {
+    showRedFlagBanner(
+      "PRIORITY TRIAGE ALERT: Acute Symptoms Flagged",
+      "Patient reported severe chest pressure/pain. Triaging immediately to emergency clinical desk."
+    );
+  }
+
+  // Branching Logic
+  if (state.opdType === 'allopathy') {
+    if (currentId === 'cc') state.conversation.currentQuestionId = answerText.includes("Pain") ? 'socrates_onset' : 'past_history';
+    else if (currentId === 'socrates_onset') state.conversation.currentQuestionId = 'socrates_character';
+    else if (currentId === 'socrates_character') state.conversation.currentQuestionId = 'past_history';
+    else state.conversation.currentQuestionId = null;
   } else {
-    setTimeout(() => renderNode(opt.next), 400);
+    // AYUSH Branching
+    if (currentId === 'cc') state.conversation.currentQuestionId = 'agni';
+    else if (currentId === 'agni') state.conversation.currentQuestionId = 'koshtha';
+    else if (currentId === 'koshtha') state.conversation.currentQuestionId = 'prakriti';
+    else state.conversation.currentQuestionId = null;
   }
+
+  document.getElementById('voice-text-input').value = '';
+  renderQuestion();
+}
+
+function submitAnswer() {
+  const input = document.getElementById('voice-text-input').value.trim();
+  if (input) handleAnswer(input);
+}
+
+// Native Speech Recognition Integration
+function toggleVoiceInput() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    alert("Speech recognition is not supported on this browser. Use touch options.");
+    return;
+  }
+
+  if (!recognition) {
+    recognition = new SpeechRecognition();
+    recognition.lang = state.language === 'hi' ? 'hi-IN' : 'en-US';
+    
+    recognition.onstart = () => {
+      document.getElementById('voice-indicator').classList.remove('hidden');
+    };
+    
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      document.getElementById('voice-text-input').value = transcript;
+      document.getElementById('voice-indicator').classList.add('hidden');
+    };
+
+    recognition.onerror = () => {
+      document.getElementById('voice-indicator').classList.add('hidden');
+    };
+  }
+
+  recognition.start();
 }
