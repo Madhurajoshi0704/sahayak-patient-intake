@@ -1,47 +1,44 @@
-/* =========================================================
-   identify.js
-   Step 1 — "Identify". Handles:
-   - rendering the language buttons on the welcome screen
-   - switching between "I have an ABHA ID" and "first visit"
-   - only unlocking "Continue" once an ID/name is entered AND
-     the consent box is ticked (this mirrors the "consent-first
-     design" requirement in the problem statement)
-   ========================================================= */
+// identify.js - Auth, Language Selection & Audio Consent
 
-function renderLangs(){
-  const grid = document.getElementById('langGrid');
-  grid.innerHTML = languages.map(([native, eng]) => `
-    <button class="lang-chip ${eng === state.lang ? 'selected' : ''}" onclick="pickLang('${eng}', this)">
-      ${native}<span class="native-sub">${eng}</span>
-    </button>
-  `).join('');
+function setOpdType(type) {
+  state.opdType = type;
+  document.getElementById('opd-allopathy').classList.toggle('active', type === 'allopathy');
+  document.getElementById('opd-ayush').classList.toggle('active', type === 'ayush');
 }
 
-function pickLang(eng, el){
-  state.lang = eng;
-  document.querySelectorAll('.lang-chip').forEach(c => c.classList.remove('selected'));
-  el.classList.add('selected');
+// Audio-guided consent for low-literacy accessibility
+function playAudioConsent() {
+  const consentTexts = {
+    'en': "Welcome to Sahayak. By checking this box, you grant explicit consent to securely record your medical history and link prior documents to your ABHA health record in accordance with the Digital Personal Data Protection Act 2023.",
+    'hi': "सहायक में आपका स्वागत है। इस बॉक्स को चेक करके, आप डिजिटल व्यक्तिगत डेटा संरक्षण अधिनियम 2023 के तहत अपने मेडिकल इतिहास और दस्तावेजों को अपने आभा कार्ड से जोड़ने की सहमति देते हैं।"
+  };
+
+  const text = consentTexts[state.language] || consentTexts['en'];
+  const speech = new SpeechSynthesisUtterance(text);
+  speech.lang = state.language === 'hi' ? 'hi-IN' : 'en-US';
+
+  window.speechSynthesis.speak(speech);
 }
 
-function selectIdMode(mode){
-  state.idMode = mode;
-  document.getElementById('opt-abha').classList.toggle('selected', mode === 'abha');
-  document.getElementById('opt-new').classList.toggle('selected', mode === 'new');
-  document.getElementById('idLabel').textContent = mode === 'abha' ? 'ABHA ID' : 'Full name';
-  document.getElementById('idInput').placeholder = mode === 'abha' ? '14-2536-XXXX-XXXX' : 'Enter your name';
+function toggleContinueBtn() {
+  const isChecked = document.getElementById('consent-check').checked;
+  const patientId = document.getElementById('auth-id').value.trim();
+  document.getElementById('btn-step1-next').disabled = !(isChecked && patientId.length > 0);
 }
 
-function checkIdentifyReady(){
-  const hasId = document.getElementById('idInput').value.trim().length > 2;
-  const consented = document.getElementById('consentBox').checked;
-  document.getElementById('identifyContinue').disabled = !(hasId && consented);
-}
+document.getElementById('auth-id').addEventListener('input', toggleContinueBtn);
 
-function playListen(btn){
-  // Placeholder for a real text-to-speech call. Kept as a plain
-  // button-text change rather than an animation, since the
-  // audio playback itself is the meaningful feedback, not a visual effect.
-  const original = btn.textContent;
-  btn.textContent = '🔊 Playing…';
-  setTimeout(() => btn.textContent = original, 1500);
+// Language selector binding
+document.querySelectorAll('#lang-selector button').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    document.querySelectorAll('#lang-selector button').forEach(b => b.classList.remove('active'));
+    e.target.classList.add('active');
+    state.language = e.target.getAttribute('data-lang');
+  });
+});
+
+function submitStep1() {
+  state.patientInfo.id = document.getElementById('auth-id').value.trim();
+  state.patientInfo.consentGiven = document.getElementById('consent-check').checked;
+  goToStep(2);
 }
