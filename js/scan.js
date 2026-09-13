@@ -1,52 +1,37 @@
-/* =========================================================
-   scan.js
-   Step 3 — "Scan". Simulates the document digitisation pipeline:
-   patient taps "scan", we show a short "reading document" pause,
-   then reveal the fields a real OCR/document-AI model would have
-   extracted (diagnoses, medicines, lab values — with abnormal
-   values already flagged).
+// scan.js - Medical Document Digitization, OCR Parsing & Lab Alerting
 
-   Swap `mockDocs` and the setTimeout delay for a real call to an
-   OCR/document-AI endpoint to make this production-ready.
-   ========================================================= */
-
-function scanDoc(){
-  if(state.docs.length >= mockDocs.length) return;
-
-  document.getElementById('scanningRow').innerHTML =
-    `<p class="scanning-note">Reading document, please wait…</p>`;
+function triggerScanSimulation() {
+  document.getElementById('scan-progress').classList.remove('hidden');
+  document.getElementById('ocr-results').classList.add('hidden');
 
   setTimeout(() => {
-    document.getElementById('scanningRow').innerHTML = '';
-    const doc = mockDocs[state.docs.length];
-    state.docs.push(doc);
-    renderDocList();
-
-    if(state.docs.length >= mockDocs.length){
-      document.getElementById('scanZone').style.display = 'none';
-    }
-    document.getElementById('scanContinue').style.display = 'block';
-    document.getElementById('scanSkip').textContent = 'Continue';
-  }, 1100);
+    state.ocrData = sampleOcrPresets[0];
+    document.getElementById('scan-progress').classList.add('hidden');
+    renderOcrResults();
+  }, 2000);
 }
 
-function renderDocList(){
-  document.getElementById('docList').innerHTML = state.docs.map(doc => `
-    <div class="doc-card">
-      <div class="doc-card-head"><span>${doc.title}</span><span class="doc-date">${doc.date}</span></div>
-      ${doc.fields.map(f => `
-        <div class="doc-field">
-          <span>${f.label}</span>
-          <span class="val ${f.flag === 'alert' ? 'val-alert' : f.flag === 'warn' ? 'val-warn' : ''}">
-            ${f.value}${f.note ? ` — ${f.note}` : ''}
-          </span>
-        </div>`).join('')}
-      <span class="doc-confidence">Read successfully</span>
-    </div>
-  `).join('');
-}
+function renderOcrResults() {
+  const listEl = document.getElementById('ocr-extracted-list');
+  listEl.innerHTML = '';
 
-function finishScan(){
-  goTo('s-summarize');
-  runSummary();
+  // Extracted Diagnoses
+  const diagLi = document.createElement('li');
+  diagLi.innerHTML = `<strong>Diagnoses Extracted:</strong> ${state.ocrData.diagnoses.join(', ')}`;
+  listEl.appendChild(diagLi);
+
+  // Extracted Medications
+  const medLi = document.createElement('li');
+  medLi.innerHTML = `<strong>Prescribed Drugs:</strong> ${state.ocrData.medications.join(', ')}`;
+  listEl.appendChild(medLi);
+
+  // Extracted Lab Values with Abnormal Range Flagging
+  state.ocrData.labs.forEach(lab => {
+    const li = document.createElement('li');
+    let abnormalBadge = lab.isAbnormal ? `<span class="abnormal-tag">⚠️ Out of Range (${lab.range})</span>` : '';
+    li.innerHTML = `<strong>${lab.test}:</strong> ${lab.value} ${abnormalBadge}`;
+    listEl.appendChild(li);
+  });
+
+  document.getElementById('ocr-results').classList.remove('hidden');
 }
